@@ -18,3 +18,4 @@
 - name: ロケール設定の再読み込みが必要(ロケール変更時)
   debug:
     msg: source /etc/default/locale
+  when: locale_check.rc == 1

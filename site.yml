@@ -10,6 +10,6 @@
     - create_ec2-user
     - apache2
     - php72
-    #- mariadb10_WP
-    #- serverspec
-    #- wordpress
+    #- mariadb10_WP(作成中)
+    #- serverspec(作成中)
+    #- wordpress(作成中)

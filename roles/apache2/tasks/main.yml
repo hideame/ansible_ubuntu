@@ -4,15 +4,22 @@
     name: apache2
     state: present
 
+- name: apache2デーモンの自動起動設定済みかを確認
+  shell: grep "AcceptFilter http" /etc/apache2/apache2.conf
+  register: apache2_check
+  failed_when: apache2_check.rc not in [0, 1]
+  changed_when: false
+
 - name: apache2設定ファイル編集
-  lineinfile:
+  blockinfile:
     dest: /etc/apache2/apache2.conf
-    line: "{{ item }}"
-    state: present
-  with_items:
-    - '# apache2起動時のwarning回避'
-    - AcceptFilter http none
-    - AcceptFilter https none
+    insertafter: EOF          # ファイルの末尾に追加
+    marker: ""                # 追加部分を示すマーカー(空行)
+    block: |
+      # apache2起動時のwarning回避
+      AcceptFilter http none
+      AcceptFilter https none
+  when: apache2_check.rc == 1
 
 - name: apache2サービス起動
   become_user: root
@@ -37,7 +44,3 @@
           sudo service apache2 start > /dev/null 2>&1
       fi
   when: apache2_check.rc == 1
-
-- name: 環境設定ファイルの再読み込みが必要(環境設定ファイル変更時)
-  debug:
-    msg: source "{{ profile }}"
