@@ -3,3 +3,31 @@
   apt:
     name: ['mariadb-server-10.1','mariadb-client-10.1','python-mysqldb']
     state: present
+
+- name: mariadbサービス起動
+  become_user: root
+  service:
+    name: mariadb
+    state: started
+
+- name: mariadbデーモンの自動起動設定済みかを確認
+  shell: grep "sudo service mariadb start" "{{ profile }}"
+  register: mariadb_check
+  failed_when: mariadb_check.rc not in [0, 1]
+  changed_when: false
+
+- name: mariadbデーモンの自動起動設定
+  blockinfile:
+    dest: "{{ profile }}"
+    insertafter: EOF          # ファイルの末尾に追加
+    marker: ""                # 追加部分を示すマーカー(空行)
+    block: |
+      # mariadb start
+      if ! service mariadb status > /dev/null 2>&1 ; then
+          sudo service mariadb start > /dev/null 2>&1
+      fi
+  when: mariadb_check.rc == 1
+
+- name: 環境設定ファイルの再読み込みが必要(環境設定ファイル変更時)
+  debug:
+    msg: source "{{ profile }}"
