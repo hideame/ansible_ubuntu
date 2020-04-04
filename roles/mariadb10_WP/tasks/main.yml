@@ -1,0 +1,5 @@
+- name: mariadb10のインストール
+  become_user: root
+  apt:
+    name: ['mariadb-server-10.1','mariadb-client-10.1','python-mysqldb']
+    state: present

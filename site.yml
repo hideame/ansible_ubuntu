@@ -1,0 +1,15 @@
+- name: LAMP+WP環境構築(Ubuntu18.04環境)
+  hosts: localhost		# localhostに対して実行
+  become: yes                   # ユーザ変更を許可
+  vars:
+    - profile: /home/user01/.profile
+  roles:
+    - apt-update
+    - common
+    #- locale          # 英語のままの方がググりやすいので変更しない
+    - create_ec2-user
+    - apache2
+    - php72
+    #- mariadb10_WP
+    #- serverspec
+    #- wordpress

@@ -1,0 +1,19 @@
+- name: dist-upgrade
+  become_user: root
+  apt:
+    #update_cache: yes          # 既にアップデート済みの為
+    upgrade: dist
+    state: latest
+
+- name: 開発ツールのインストール
+  become_user: root
+  apt:
+    name: build-essential
+    state: present
+
+- name: libc-binパッケージを設定(後のパッケージインストールエラー回避)
+  become_user: root
+  shell: dpkg --configure libc-bin > /dev/null 2>&1
+  register: dpkg_check
+  failed_when: dpkg_check.rc not in [0, 1]
+  changed_when: false           # 設定済みか否かを判断できないので、毎回changedにならないように制御

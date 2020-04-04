@@ -1,0 +1,20 @@
+- name: 日本語パッケージのインストール
+  become_user: root
+  apt:
+    name: language-pack-ja
+    state: present
+
+- name: ロケール設定済かを確認
+  shell: grep ja_JP.UTF-8 /etc/default/locale
+  register: locale_check
+  failed_when: locale_check.rc not in [0, 1]
+  changed_when: false           # 変更していないので、changedにならないように制御
+
+- name: ロケールの変更
+  become_user: root
+  shell: update-locale LANG=ja_JP.UTF-8
+  when: locale_check.rc == 1
+
+- name: ロケール設定の再読み込みが必要(ロケール変更時)
+  debug:
+    msg: source /etc/default/locale

@@ -1,0 +1,16 @@
+- name: ec2-user作成済みかを確認
+  shell: grep ec2-user /etc/passwd
+  register: user_check
+  failed_when: user_check.rc not in [0, 1]
+  changed_when: false
+
+- name: create_ec2-user
+  become_user: root
+  user:
+    name: ec2-user
+    password: "{{ 'ec2-user'|password_hash('sha512') }}"        # パスワードをハッシュ化して/etc/shadowに書き込む
+    shell: /bin/bash
+    groups: sudo        # サブグループ名を指定
+    append: yes         # サブグループ名を追加所属
+    state: present
+  when: user_check.rc == 1

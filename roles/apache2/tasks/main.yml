@@ -1,0 +1,43 @@
+- name: apache2インストール
+  become_user: root
+  apt:
+    name: apache2
+    state: present
+
+- name: apache2設定ファイル編集
+  lineinfile:
+    dest: /etc/apache2/apache2.conf
+    line: "{{ item }}"
+    state: present
+  with_items:
+    - '# apache2起動時のwarning回避'
+    - AcceptFilter http none
+    - AcceptFilter https none
+
+- name: apache2サービス起動
+  become_user: root
+  service:
+    name: apache2
+    state: started
+
+- name: apache2デーモンの自動起動設定済みかを確認
+  shell: grep "sudo service apache2 start" "{{ profile }}"
+  register: apache2_check
+  failed_when: apache2_check.rc not in [0, 1]
+  changed_when: false
+
+- name: apache2デーモンの自動起動設定
+  blockinfile:
+    dest: "{{ profile }}"
+    insertafter: EOF          # ファイルの末尾に追加
+    marker: ""                # 追加部分を示すマーカー(空行)
+    block: |
+      # apache2 start
+      if ! service apache2 status > /dev/null 2>&1 ; then
+          sudo service apache2 start > /dev/null 2>&1
+      fi
+  when: apache2_check.rc == 1
+
+- name: 環境設定ファイルの再読み込みが必要(環境設定ファイル変更時)
+  debug:
+    msg: source "{{ profile }}"

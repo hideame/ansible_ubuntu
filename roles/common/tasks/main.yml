@@ -1,0 +1,27 @@
+- name: sshデーモンの自動起動設定済みかを確認
+  shell: grep "sudo service ssh start" "{{ profile }}"
+  register: ssh_check
+  failed_when: ssh_check.rc not in [0, 1]
+  changed_when: false
+
+- name: sshデーモンの自動起動設定
+  blockinfile:
+    dest: "{{ profile }}"
+    insertafter: EOF          # ファイルの末尾に追加
+    marker: ""                # 追加部分を示すマーカー(空行)
+    block: |
+      # ssh start
+      if ! service ssh status > /dev/null 2>&1 ; then
+          sudo service ssh start > /dev/null 2>&1
+      fi
+  when: ssh_check.rc == 1
+
+- name: 環境設定ファイルの再読み込みが必要(環境設定ファイル変更時)
+  debug:
+    msg: source "{{ profile }}"
+
+- name: コマンドインストール
+  become_user: root
+  apt:
+    name: ['tree']
+    state: present

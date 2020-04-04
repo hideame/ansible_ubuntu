@@ -1,0 +1,7 @@
+- name: php72のインストール
+  become_user: root
+  apt:
+    name: ['php7.2','php7.2-mbstring','php7.2-mysql']
+    state: present
+    # php-mbstring: マルチバイト文字列拡張モジュール
+    # php-mysqlnd: MariaDB用ドライバ
