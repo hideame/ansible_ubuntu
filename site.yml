@@ -4,12 +4,12 @@
   vars:
     - profile: /home/user01/.profile
   roles:
-    - apt-update
+    #- apt-update      # 既にアップデート/インストール済みの為
     - common
     #- locale          # 英語のままの方がググりやすいので変更しない
     - create_ec2-user
-    - apache2
-    - php72
-    #- mariadb10_WP(作成中)
+    #- apache2
+    #- php72
+    #- mariadb10_WP
     #- serverspec(作成中)
     #- wordpress(作成中)

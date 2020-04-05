@@ -1,7 +1,7 @@
 - name: dist-upgrade
   become_user: root
   apt:
-    #update_cache: yes          # 既にアップデート済みの為
+    update_cache: yes
     upgrade: dist
     state: latest
 

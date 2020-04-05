@@ -4,30 +4,39 @@
     name: ['mariadb-server-10.1','mariadb-client-10.1','python-mysqldb']
     state: present
 
-- name: mariadbサービス起動
+- name: mysqlサービス起動
   become_user: root
   service:
-    name: mariadb
+    name: mysql
     state: started
 
-- name: mariadbデーモンの自動起動設定済みかを確認
-  shell: grep "sudo service mariadb start" "{{ profile }}"
-  register: mariadb_check
-  failed_when: mariadb_check.rc not in [0, 1]
+- name: mysqlデーモンの自動起動設定済みかを確認
+  shell: grep "sudo service mysql start" "{{ profile }}"
+  register: mysql_check
+  failed_when: mysql_check.rc not in [0, 1]
   changed_when: false
 
-- name: mariadbデーモンの自動起動設定
+- name: mysqlデーモンの自動起動設定
   blockinfile:
     dest: "{{ profile }}"
     insertafter: EOF          # ファイルの末尾に追加
     marker: ""                # 追加部分を示すマーカー(空行)
     block: |
-      # mariadb start
-      if ! service mariadb status > /dev/null 2>&1 ; then
-          sudo service mariadb start > /dev/null 2>&1
+      # mysql start
+      if ! service mysql status > /dev/null 2>&1 ; then
+          sudo service mysql start > /dev/null 2>&1
       fi
-  when: mariadb_check.rc == 1
+  when: mysql_check.rc == 1
 
-- name: 環境設定ファイルの再読み込みが必要(環境設定ファイル変更時)
-  debug:
-    msg: source "{{ profile }}"
+- name: MySQL DB作成
+  mysql_db:
+    name: "{{ db_name }}"
+    state: present
+
+- name: MySQLユーザの作成
+  mysql_user:
+    host: localhost
+    name: "{{ db_username }}"
+    password: "{{ db_userpass }}"
+    priv: "{{ db_name }}.*:ALL,GRANT"
+    state: present
