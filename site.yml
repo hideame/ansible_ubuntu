@@ -4,7 +4,7 @@
   vars:
     - profile: /home/user01/.profile
   roles:
-    - apt-update      # 既にアップデート/インストール済みの為
+    #- apt-update      # 既にアップデート/インストール済みの為
     - common
     #- locale          # 英語のままの方がググりやすいので変更しない
     - create_ec2-user
