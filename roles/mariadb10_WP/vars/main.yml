@@ -1,3 +1,3 @@
 db_name: wp
-db_username: wpadmin
-db_userpass: wpadmin
+db_user: wpuser
+db_pass: wpuser

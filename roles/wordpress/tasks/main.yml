@@ -1,0 +1,141 @@
+- name: WordPressのダウンロード
+  get_url:
+    url: "https://ja.wordpress.org/{{ wordpress_ver }}"
+    dest: "/tmp/{{ wordpress_ver }}"
+
+- name: WordPressが展開済みなら実施しない
+  stat:
+    path: "{{ wp_path }}"
+  register: wordpress
+
+- name: WordPressの展開
+  unarchive:
+    src: "/tmp/{{ wordpress_ver }}"
+    dest: /var/www/
+  when: not wordpress.stat.exists
+
+- name: WordPressの所有者をwww-dataに変更
+  file:
+    path: "{{ wp_path }}"
+    owner: www-data
+    group: www-data
+    state: directory
+    recurse: yes
+
+- name: WP-CLIコマンドのダウンロード
+  get_url:
+    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    dest: /usr/local/bin/wp
+    owner: www-data
+    group: www-data
+    mode: 0755
+
+- name: テンポラリファイルに対して全ユーザに読み取り権限付与
+  lineinfile:
+    dest: /etc/ansible/ansible.cfg
+    line: allow_world_readable_tmpfiles = True
+    state: present
+
+- name: configファイル設定済みなら実施しない
+  stat:
+    path: "{{ wp_path }}/wp-config.php"
+  register: wpconfig
+
+- name: configファイル設定(DB設定情報)
+  become_user: www-data
+  shell: wp core config --dbhost="{{ hostname }}" --dbname="{{ db_name }}" --dbuser="{{ db_user }}" --dbpass="{{ db_pass }}" --path="{{ wp_path }}"
+  when: not wpconfig.stat.exists
+
+- name: WordPressのインストール
+  become_user: www-data
+  shell: wp core install --url="{{ hostname }}" --title="☂☂☂ボツワナに恵みの雨を☂☂☂" --admin_user="{{ wp_user }}" --admin_password="{{ wp_pass }}" --admin_email="{{ email }}" --path="{{ wp_path }}"
+  when: not wpconfig.stat.exists
+
+- name: DocumentRootの変更
+  replace:
+    dest: /etc/apache2/sites-available/000-default.conf
+    regexp:  'DocumentRoot /var/www/html'
+    replace: 'DocumentRoot /var/www/wordpress'
+
+- name: apache2サービスの再起動
+  service:
+    name: apache2
+    state: restarted
+
+- name: テーマがインストール済みなら実施しない(habakiri)
+  stat:
+    path: "{{ wp_path }}/wp-content/themes/habakiri"
+  register: habakiri
+
+- name: テーマのインストール(habakiri)
+  become_user: www-data
+  shell: wp theme install habakiri --path="{{ wp_path }}"
+  when: not habakiri.stat.exists
+
+- name: php7.2-curlのインストール
+  apt:
+    name: php7.2-curl
+    state: present
+    # cocoonで必要の為
+
+- name: 親テーマのダウンロード(cocoon)
+  get_url:
+    url: https://wp-cocoon.com/download/791/
+    dest: /tmp/cocoon-master-2.1.3.6.zip
+
+- name: 親テーマが展開済みなら実施しない(cocoon)
+  stat:
+    path: "{{wp_path}}/wp-content/themes/cocoon-master"
+  register: cocoon
+
+- name: 親テーマの展開(cocoon)
+  unarchive:
+    src: /tmp/cocoon-master-2.1.3.6.zip
+    dest: "{{wp_path}}/wp-content/themes/"
+  when: not cocoon.stat.exists
+
+- name: 子テーマのダウンロード(cocoon-child)
+  get_url:
+    url: https://wp-cocoon.com/download/726/
+    dest: /tmp/cocoon-child-master-1.1.1.zip
+
+- name: 子テーマが展開済みなら実施しない(cocoon-child)
+  stat:
+    path: "{{wp_path}}/wp-content/themes/cocoon-child-master"
+  register: cocoonChild
+
+- name: 子テーマの展開(cocoon-child)
+  unarchive:
+    src: /tmp/cocoon-child-master-1.1.1.zip
+    dest: "{{wp_path}}/wp-content/themes/"
+  when: not cocoonChild.stat.exists
+
+- name: テーマ配下の所有権をwww-dataに変更
+  file:
+    path: /var/www/html/wordpress/wp-content/themes
+    owner: www-data
+    group: www-data
+    state: directory
+    recurse: yes
+
+- name: テーマの有効化(cocoon-child)
+  become_user: www-data
+  shell: wp theme activate cocoon-child-master --path="{{ wp_path }}"
+  when: not cocoonChild.stat.exists
+
+- name: プラグインのインストール
+  become_user: www-data
+  shell: wp plugin install "{{ item }}" --path="{{ wp_path }}" --activate
+  with_items:
+    - backwpup                          # WordPressのファイルとデータベースのバックアップを取得
+    - broken-link-checker               # リンク切れを自動でチェック
+    - contact-form-7                    # お問い合わせフォームプラグイン(メール機能は下記Gmail SMTPで実装
+    - flickr-pick-a-picture             # 著作権リンク付きの写真を挿入
+    - gmail-smtp                        # GmailのSMTPサーバー経由でメールを送信
+    - google-sitemap-generator          # サイトマップをGoogleに送信してインデックスへの登録漏れを防ぐ
+    - pixabay-images                    # パブリックドメイン(知的財産権のない)画像を簡単に挿入
+    - polylang                          # WordPress に多言語機能を追加
+    - siteorigin-panels                 # 固定ページにもサイドバーウィジェットを作成
+    - syntaxhighlighter                 # ソースコードを綺麗に表示
+    - wordpress-importer                # WordPressエクスポートファイルからインポートするツール
+    - wp-multibyte-patch                # 日本語版WordPressのマルチバイト文字の取り扱いに関する不具合の修正

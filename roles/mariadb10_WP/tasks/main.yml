@@ -1,11 +1,9 @@
 - name: mariadb10のインストール
-  become_user: root
   apt:
-    name: ['mariadb-server-10.1','mariadb-client-10.1','python-mysqldb']
+    name: ['mariadb-server-10.1','mariadb-client-10.1','python3-mysqldb']
     state: present
 
 - name: mysqlサービス起動
-  become_user: root
   service:
     name: mysql
     state: started
@@ -23,20 +21,21 @@
     marker: ""                # 追加部分を示すマーカー(空行)
     block: |
       # mysql start
-      if ! service mysql status > /dev/null 2>&1 ; then
+      if ! sudo service mysql status > /dev/null 2>&1 ; then
           sudo service mysql start > /dev/null 2>&1
       fi
   when: mysql_check.rc == 1
 
-- name: MySQL DB作成
+- name: DB作成
   mysql_db:
     name: "{{ db_name }}"
     state: present
 
-- name: MySQLユーザの作成
+- name: DBユーザの作成
+  no_log: true
   mysql_user:
     host: localhost
-    name: "{{ db_username }}"
-    password: "{{ db_userpass }}"
+    name: "{{ db_user }}"
+    password: "{{ db_pass }}"
     priv: "{{ db_name }}.*:ALL,GRANT"
     state: present

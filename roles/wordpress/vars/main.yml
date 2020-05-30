@@ -1,0 +1,9 @@
+hostname: localhost
+wordpress_ver: wordpress-5.4-ja.tar.gz
+wp_path: /var/www/wordpress
+db_name: wp
+db_user: wpuser
+db_pass: wpuser
+wp_user: wpadmin
+wp_pass: wpadmin
+email: XXXXXX@gmail.com

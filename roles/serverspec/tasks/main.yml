@@ -1,0 +1,16 @@
+- name: ruby2.5インストール
+  apt:
+    name: ruby2.5
+    state: present
+
+- name: ruby gemsのインストール
+  gem:
+    name: "{{ item }}"
+    user_install: no                        # システム領域にインストール
+    executable: /usr/bin/gem
+    state: present
+  with_items:
+    - bundler
+    - highline
+    - rake                                  # Serverspecに必要なライブラリ
+    - serverspec                            # サーバ構成テストツール

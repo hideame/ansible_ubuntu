@@ -4,8 +4,7 @@
   failed_when: user_check.rc not in [0, 1]
   changed_when: false
 
-- name: create_ec2-user
-  become_user: root
+- name: ec2-userユーザの作成
   user:
     name: ec2-user
     password: "{{ 'ec2-user'|password_hash('sha512') }}"        # パスワードをハッシュ化して/etc/shadowに書き込む
