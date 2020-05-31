@@ -136,6 +136,7 @@
     - ml-slider                         # スライドショーを生成
     - pixabay-images                    # パブリックドメイン(知的財産権のない)画像を簡単に挿入
     - polylang                          # WordPress に多言語機能を追加
+    - siteorigin-panels                 # 固定ページにもサイドバーウィジェットを作成
     - syntaxhighlighter                 # ソースコードを綺麗に表示
     - wordpress-importer                # WordPressエクスポートファイルからインポートするツール
     - wp-multibyte-patch                # 日本語版WordPressのマルチバイト文字の取り扱いに関する不具合の修正
