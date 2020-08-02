@@ -26,6 +26,10 @@
       fi
   when: mysql_check.rc == 1
 
+- name: 環境設定ファイルの再読み込みが必要(環境設定ファイル変更時)★
+  debug:
+    msg: source "{{ profile }}"
+
 - name: DB作成
   mysql_db:
     name: "{{ db_name }}"
