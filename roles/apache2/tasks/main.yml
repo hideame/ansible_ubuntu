@@ -3,7 +3,7 @@
     name: apache2
     state: present
 
-- name: apache2デーモンの自動起動設定済みかを確認
+- name: apache2設定ファイル編集済みかを確認
   shell: grep "AcceptFilter http" /etc/apache2/apache2.conf
   register: apache2_check
   failed_when: apache2_check.rc not in [0, 1]
