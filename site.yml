@@ -7,7 +7,7 @@
     #- apt-update      # 既にアップデート/インストール済みの為
     - common
     #- locale          # 英語のままの方がググりやすいので変更しない
-    - create_ec2-user
+    #- create_ec2-user
     - apache2
     - php72
     - mariadb10_WP
