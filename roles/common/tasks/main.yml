@@ -1,3 +1,9 @@
+- name: umask設定
+  replace:
+    dest: "{{ profile }}"
+    regexp: "^#umask 022"
+    replace: "umask 022"
+
 - name: sshデーモンの自動起動設定済みかを確認
   shell: grep "sudo service ssh start" "{{ profile }}"
   register: ssh_check
