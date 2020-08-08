@@ -127,7 +127,7 @@
 
 - name: テーマ配下の所有権をwww-dataに変更
   file:
-    path: "{{ wp_path }}"/wp-content/themes
+    path: "{{ wp_path }}/wp-content/themes"
     owner: www-data
     group: www-data
     state: directory
